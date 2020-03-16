@@ -15,3 +15,5 @@ curl ` $url="http://xxmh60.com/home/query/directory/?bookId=".$kw;`，但关键�
 ### readsingle.php : 漫画单页显示
 先是查看是否已经保存来json数据，如有直接读取调用；如无，通过注册，获取cookie，购买，获取单页，显示
 
+## 更新状态：
+2020-03-16 14:02 - 添加了阅读界面下拉到底再持续加载图片，增加网络不好时候的阅读体验。
