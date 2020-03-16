@@ -1,8 +1,8 @@
-## 方便阅读一个韩国漫画平台
+## 方便阅读一个韩国漫画平台![logo](https://github.com/forphuw/hanman_crack/blob/master/images/logo.png)
 通过不断创建新用户（新用户有余额可以购买一章）来购买章节，对已购买章节，系统会将json数据文件存入manhua目录，下次直接点用json数据，不再购买。
 ### index.php : 主界面，截图如下
 使用了bootstrap，ajax，jquery
-![indeximg](https://)
+![indeximg](https://github.com/forphuw/hanman_crack/blob/master/images/index.jpg)
 ### indexsearch.php : 主页的搜索，通过index.php中的ajax返回数据给主页
 curl `$url="http://xxmh60.com/home/search/books?word=".$kw`，但是关键词需要编码：`$kw = urlencode($keyword);`
 ### php_fun.php : php公用函数
