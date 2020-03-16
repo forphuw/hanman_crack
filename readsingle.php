@@ -250,7 +250,6 @@ function addImg(){
         div.append('<img width="100%" src="'+imgList[nowindex].url+'" >');
         
     }
-    
 }
 </script>
 </body>
