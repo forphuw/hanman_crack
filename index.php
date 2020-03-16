@@ -141,7 +141,5 @@ overflow:hidden
     //window.open("//cn.gimy.tv/video/"+value);
   }
       </script>
-  
-
 </body>
 </html>
