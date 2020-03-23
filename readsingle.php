@@ -3,6 +3,16 @@ set_time_limit(0);
 require_once('./php_fun.php');
 $ido = $_GET['oid'];//chapter
 $id = $_GET['id'];//pages
+//global various
+//$userName = "8201391bb";//
+$userName = "d".substr(md5(time()),0,9);//73a2ba79d
+echo $userName." | ";
+$urlreg = "http://xxmh60.com/user/register?userName=".$userName."&password=123456";
+$urllogin = "http://xxmh60.com/user/login?userName=".$userName."&password=123456";
+$urlqiandao = "http://xxmh60.com/user/getBillingAccount/qiandao";
+$urlbuy = "http://xxmh60.com/user/order/submit?bookId=".$ido."&chapterId=".$id;
+$urlimglist ="http://xxmh60.com/home/query/chapter?bookId=".$ido."&chapterId=".$id;
+
 
 class CurlLoginCookie
 {
@@ -15,7 +25,8 @@ class CurlLoginCookie
         $re = $this->post_curl($GLOBALS['urlreg'], [], 1);
       $json = json_decode($re,true);
       $this->token = $json['content']['token'];
-      $printStr['register'] = $json['code']."-".$json['msg']."-".$this->token." | ";
+      $this->printStr['register'] = $json['code']."-".$json['msg']."-".$this->token." | ";
+      echo $this->printStr['register'];
     }
 //登录接口，获取cookie
     public function userdetail()
@@ -33,7 +44,8 @@ class CurlLoginCookie
                 break;
           }
       	$this->token = $json['content']['token'];
-      	$printStr['userdetail'] = $json['code']."-".$json['msg']."-".$this->token." | ";
+      	$this->printStr['userdetail'] = $json['code']."-".$json['msg']."-".$this->token." | ";
+          echo $this->printStr['userdetail'];
     }
     //登录接口，获取cookie
     public function login()
@@ -51,9 +63,29 @@ class CurlLoginCookie
                 break;
           }
       	$this->token = $json['content']['token'];
-      	$printStr['login'] = $json['code']."-".$json['msg']."-".$this->token." | ";
+      	$this->printStr['login'] = $json['code']."-".$json['msg']."-".$this->token." | ";
+          echo $this->printStr['login'];
     }
-	
+	//执行登录后的签到
+    public function qiandao()
+    {
+        $ct=0;
+        $re = $this->post_curl($GLOBALS['urlqiandao'],[]);
+
+        $json = json_decode($re, true);
+        while($json['code']!=200)
+          {
+            $re = $this->post_curl($GLOBALS['urlqiandao'],[]);
+      	    $json = json_decode($re,true);
+              sleep(1);
+              $ct++;
+              if($ct>5)
+                break;
+          }
+		$this->printStr['qiandao'] = $json['code']."-qiaodao ".$json['msg']." | ";
+        echo $this->printStr['qiandao'];
+        //var_dump($re);
+    }
     //执行登录后的购买
     public function buy()
     {
@@ -70,7 +102,8 @@ class CurlLoginCookie
               if($ct>5)
                 break;
           }
-		$printStr['buy'] = $json['code']."-buy ".$json['msg']." | ";
+		$this->printStr['buy'] = $json['code']."-buy ".$json['msg']." | ";
+        echo $this->printStr['buy'];
         //var_dump($re);
     }
     //获得图片list
@@ -88,8 +121,9 @@ class CurlLoginCookie
               if($ct>5)
                 break;
           }
-      	$this->imglistA = $json;
-      $printStr['getImgList'] = $json['code']."-imgs ".$json['msg']." | ";
+        $this->imglistA = $json;
+      $this->printStr['getImgList'] = $json['code']."-imgs ".$json['msg']." | ";
+      echo $this->printStr['getImgList'];
     }
     //发送请求
     function post_curl($url, $params=[], $needtoken=0){
@@ -128,6 +162,7 @@ class CurlLoginCookie
             $this->register();
             //$this->login();
             $this->userdetail();
+            $this->qiandao();
             $this->buy();
             $this->getImgList();
         }catch(\Exception $e){
@@ -137,45 +172,44 @@ class CurlLoginCookie
 
 }
 
-//global various
-//$userName = "8201391bb";//
-$userName = "d".substr(md5(time()),0,9);//73a2ba79d
-$urlreg = "http://xxmh60.com/user/register?userName=".$userName."&password=123456";
-$urllogin = "http://xxmh60.com/user/login?userName=".$userName."&password=123456";
-$urlbuy = "http://xxmh60.com/user/order/submit?bookId=".$ido."&chapterId=".$id;
-$urlimglist ="http://xxmh60.com/home/query/chapter?bookId=".$ido."&chapterId=".$id;
 
-function getFromWeb(){
+
+function getFromWeb($username){
     $myfile = fopen("users.html", "ab+");
-            fwrite($myfile, $userName."<br>");
+            fwrite($myfile, $username."<br>");
     fclose($myfile);
     $obj = new CurlLoginCookie();
     $obj->start();
     $resA = $obj->imglistA;
-    return $resA;
+    $printStrm = $obj->printStr;
+    return [$resA,$printStrm];
     //var_dump($resA);
 }
-$resA = array();$getFromWeb = true;
+$resA = array();$getFromWeb1 = true;$printStr='';
 //check if save this json to file
 $dirname = './manhua/'.$ido."/";
 $filename = $ido."-".$id.".json";
 if(!is_dir($dirname)){
     //you should visit this page from readml.php first. so redirect to readml.php
     createfile($dirname);
-    $resA = getFromWeb();
+    $res = getFromWeb($userName);
+    $resA = $res[0];
+    $printStr = $res[1];
     //and write json to it
     $json = json_encode($resA);
     file_put_contents($dirname."".$filename, $json);
 }else{
     //if this direct exists, check the file is existed? and write to file
     if(!file_exists($dirname."".$filename)){
-        $resA = getFromWeb();
+        $res = getFromWeb($userName);
+        $resA = $res[0];
+        $printStr = $res[1];
         //and write json to it
         $json = json_encode($resA);
         file_put_contents($dirname."".$filename, $json);
     }else{
         //the direct and file exsit, read this file
-        $getFromWeb = false;
+        $getFromWeb1 = false;
         $json = file_get_contents($dirname."".$filename);
         //change json to array
         $resA = json_decode($json,true);
@@ -212,8 +246,9 @@ var _hmt = _hmt || [];
  
 <div class="container">
     <div class="row">
-         <?php echo "用户:".$userName." 您好 | ";
-            if($getFromWeb){foreach($obj->printStr as $val){echo $val;}}
+         <?php 
+         //echo "用户:".$userName." 您好 | ";
+           // if($getFromWeb1){foreach($obj->printStr as $val){echo $val;}}
          $i=0;
          foreach($resA['content']['imageList'] as $img){ $i++;if($i>3)break;?>
                 <img width="100%" src="<?php echo $img['url']; ?>" >
@@ -250,6 +285,7 @@ function addImg(){
         div.append('<img width="100%" src="'+imgList[nowindex].url+'" >');
         
     }
+    
 }
 </script>
 </body>
